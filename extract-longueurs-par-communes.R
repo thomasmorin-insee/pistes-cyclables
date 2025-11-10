@@ -7,6 +7,7 @@ library(sf)
 library(aws.s3)
 library(arrow)
 
+# Départements OSM
 liste_dep_osm <- c(
   "01" = "Ain", "02" = "Aisne", "03" = "Allier", "04" = "Alpes-de-Haute-Provence", "05" = "Hautes-Alpes", "06" = "Alpes-Maritimes", "07" = "Ardèche", "08" = "Ardennes",
   "09" = "Ariège", "10" = "Aube", "11" = "Aude", "12" = "Aveyron", "13" = "Bouches-du-Rhône", "14" = "Calvados", "15" = "Cantal", "16" = "Charente", "17" = "Charente-Maritime",
@@ -24,13 +25,59 @@ liste_dep_osm <- c(
   "974" = "La Réunion", "976" = "Mayotte"
 )
 
+# Tags utilisés pour le schéma des aménagaments cyclables
+liste_tags <- c(
+  # 1. Caractéristiques générales
+  "highway", "construction", "junction", "tracktype", "service",
+  "footway", "path", "steps", "living_street", "pedestrian",
+  "residential", "unclassified", "primary", "secondary", "tertiary",
+  
+  # 2. Aménagements cyclables
+  "cycleway", "cycleway.left", "cycleway.right", "cycleway.both",
+  "cycleway.width", "cycleway.est_width",
+  "cycleway.left.width", "cycleway.right.width", "cycleway.both.width",
+  "cycleway.left.est_width", "cycleway.right.est_width", "cycleway.both.est_width",
+  "cycleway.left.oneway", "cycleway.right.oneway",
+  "cycleway.left.surface", "cycleway.right.surface", "cycleway.surface",
+  "cycleway.left.smoothness", "cycleway.right.smoothness", "cycleway.smoothness",
+  "cycleway.left.segregated", "cycleway.right.segregated",
+  "cycleway.both.segregated", "cycleway.segregated",
+  "ramp.bicycle", "oneway.bicycle",
+  
+  # 3. Aménagements piétons
+  "sidewalk.bicycle", "sidewalk.left.segregated", "sidewalk.segregated",
+  "sidewalk.left", "sidewalk.right",
+  
+  # 4. Circulation et accès
+  "access", "motor_vehicle", "motorcar", "psv", "bus",
+  "oneway", "lanes",
+  
+  # 5. Revêtement et qualité
+  "surface", "surface.left", "surface.right",
+  "smoothness", "smoothness.left", "smoothness.right",
+  
+  # 6. Signalisation et réglementation
+  "traffic_sign", "designation", "maxspeed", "zone.maxspeed",
+  "source.maxspeed", "cyclestreet", "living_street",
+  
+  # 7. Métadonnées
+  "ref", "description", "note", "fixme",
+  "source", "source.geometry", "start_date", "osm_timestamp",
+  
+  # 8. Relations d’itinéraires
+  "route", "route_icn_ref", "route_ncn_ref", "route_rcn_ref", "route_lcn_ref"
+)
+
+
 # Fait 01 - 44, 67, 68
 
 # Amélioration de la méthode à partir de 26
 liste_code_dep <- names(liste_dep_osm)[19:27]
-liste_code_dep <- "18"
+liste_code_dep <- "13"
+
+
 for(code_dep in liste_code_dep) {
-  # for(code_dep in c("26","27")) {
+  # code_dep <- "13"
   
   gc()
   
@@ -38,7 +85,7 @@ for(code_dep in liste_code_dep) {
   
   # Fichier à enregistrer
   BUCKET <- "zg6dup"
-  FILE <- paste0("pistes_cyclables/longueur_voirie_",code_dep ,".parquet")
+  FILE <- paste0("osm_line_cyclable/longueur_voirie_",code_dep ,".parquet")
   
   # Récupère les objets "commune" dans le département "Nom-du-dépt, France"
   communes_osm <- paste0(liste_dep_osm[code_dep], ", France") %>%
@@ -65,6 +112,7 @@ for(code_dep in liste_code_dep) {
   
   # Boucle sur les communes (peut être relancée si erreur)
   for (i in seq_along(liste_communes)) {
+    # i <- 1
     
     # Passe les communes déjà traitées
     if(i <= compteur_traitement) next
@@ -118,7 +166,6 @@ for(code_dep in liste_code_dep) {
       return(lignes_commune)
     })
     
-    
     # Lambert 93
     lignes_commune <- lignes_commune %>% st_transform(crs=2154)
     
@@ -129,7 +176,7 @@ for(code_dep in liste_code_dep) {
     longueur_voirie <- lignes_commune %>% 
       
       # Variables utiles
-      select(any_of(c("highway","oneway","bicycle", "cycleway" , "maxspeed", "longueur"))) %>%
+      select(any_of(c(liste_tags, "longueur"))) %>%
       st_drop_geometry() %>%
       
       # Longueur selon la description de la voirie
@@ -156,3 +203,8 @@ for(code_dep in liste_code_dep) {
     opts = list("region" = "")
   )
 }
+
+names(data_resultats)
+setdiff(liste_tags, names(data_resultats))
+names(lignes_commune)
+sort(liste_tags)
