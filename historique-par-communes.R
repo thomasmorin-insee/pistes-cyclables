@@ -1,14 +1,11 @@
-install.packages(c("ohsome"))
-
-library(ohsome)
+# Library
 library(osmdata)
 library(sf)
 library(dplyr)
 library(aws.s3)
 library(arrow)
 library(httr)
-library(jsonlite)
-
+library(geojsonsf)
 
 # Départements OSM
 liste_dep_osm <- c(
@@ -28,8 +25,34 @@ liste_dep_osm <- c(
   "974" = "La Réunion", "976" = "Mayotte"
 )
 
-code_dep <- "13"
-code_commune <- "13001"
+# Tags utilisés pour le schéma des aménagaments cyclables
+liste_tags <- c(
+  # 1. Caractéristiques générales
+  "highway", "construction", "junction", "tracktype", "service", "footway", "path", "steps", "living_street", "pedestrian",
+  "residential", "unclassified", "primary", "secondary", "tertiary",
+  # 2. Aménagements cyclables
+  "cycleway", "cycleway.left", "cycleway.right", "cycleway.both", "cycleway.width", "cycleway.est_width",
+  "cycleway.left.width", "cycleway.right.width", "cycleway.both.width", "cycleway.left.est_width", "cycleway.right.est_width", "cycleway.both.est_width",
+  "cycleway.left.oneway", "cycleway.right.oneway", "cycleway.left.surface", "cycleway.right.surface", "cycleway.surface",
+  "cycleway.left.smoothness", "cycleway.right.smoothness", "cycleway.smoothness",  "cycleway.left.segregated", "cycleway.right.segregated",
+  "cycleway.both.segregated", "cycleway.segregated",  "ramp.bicycle", "oneway.bicycle",
+  # 3. Aménagements piétons
+  "sidewalk.bicycle", "sidewalk.left.segregated", "sidewalk.segregated",  "sidewalk.left", "sidewalk.right",
+  # 4. Circulation et accès
+  "access", "motor_vehicle", "motorcar", "psv", "bus", "oneway", "lanes",
+  # 5. Revêtement et qualité
+  "surface", "surface.left", "surface.right",  "smoothness", "smoothness.left", "smoothness.right",
+  # 6. Signalisation et réglementation
+  "traffic_sign", "designation", "maxspeed", "zone.maxspeed",  "source.maxspeed", "cyclestreet",
+  # 7. Métadonnées
+  "ref", "description", "note", "fixme", "source", "source.geometry", "start_date", "osm_timestamp",
+  # 8. Relations d’itinéraires
+  "route", "route_icn_ref", "route_ncn_ref", "route_rcn_ref", "route_lcn_ref",
+  # 9. Ajout / correction IA :
+  "bicycle", "segregated"
+)
+
+
 
 # Récupère les objets "commune" dans le département "Nom-du-dépt, France"
 communes_osm <- paste0(liste_dep_osm[code_dep], ", France") %>%
@@ -47,25 +70,31 @@ poly_commune <- communes_sf %>% filter(`ref:INSEE` == code_commune)
 # plot(poly_commune)
 
 # Convertir le polygone en GeoJSON (format attendu par l'API ohsome)
-poly_geojson <- sf_geojson(poly_commune)
+poly_geojson <- geojsonsf::sf_geojson(poly_commune %>% select(geometry))
+
+poly_geojson
+#> {"type":"MultiPolygon","coordinates":[[[[5.365328,43.624773],[5.3703193,43.6253839],...
+
+# Convertir poly_commune en FeatureCollection GeoJSON
+poly_commune$id <- 1  # ou un identifiant unique si vous avez plusieurs features
+fc_geojson <- geojsonsf::sf_geojson(select(poly_commune, id), simplify = FALSE)
+
 
 # Construire le corps de la requête
-body <- list(
-  bpolys = poly_geojson,
-  filter = "highway=* and not motorway=* and not trunk=*", # Exemple : toutes les routes sauf autoroutes et voies principales
-  time = "2024-02-01", # Date souhaitée
-  showMetadata = FALSE # Optionnel : pour ne pas inclure les métadonnées
-)
-
-# Envoyer la requête POST
 r <- POST(
   url = "https://api.ohsome.org/v1/elements/geometry",
-  body = body,
-  encode = "json"
+  body = list(
+    bpolys = fc_geojson,
+    filter = "highway=*",
+    time = "2017-01-01",
+    properties = "tags",
+    showMetadata = FALSE
+  ),
+  encode = "multipart"
 )
 
-# Vérifier le statut de la réponse
-status_code(r)
+response_text <- content(r, "text")
+sf_object <- st_read(response_text, quiet = TRUE)
 
-# Extraire et traiter les données GeoJSON retournées
-result <- content(r, "text", encoding = "UTF-8")
+setdiff(liste_tags, colnames(sf_object))
+intersect(liste_tags, colnames(sf_object))

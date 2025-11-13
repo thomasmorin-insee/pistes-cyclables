@@ -58,16 +58,18 @@ liste_tags <- c(
   
   # 6. Signalisation et réglementation
   "traffic_sign", "designation", "maxspeed", "zone.maxspeed",
-  "source.maxspeed", "cyclestreet", "living_street",
+  "source.maxspeed", "cyclestreet",
   
   # 7. Métadonnées
   "ref", "description", "note", "fixme",
   "source", "source.geometry", "start_date", "osm_timestamp",
   
   # 8. Relations d’itinéraires
-  "route", "route_icn_ref", "route_ncn_ref", "route_rcn_ref", "route_lcn_ref"
+  "route", "route_icn_ref", "route_ncn_ref", "route_rcn_ref", "route_lcn_ref",
+  
+  # 9. Ajout / correction IA :
+  "bicycle", "segregated"
 )
-
 
 # Fait 01 - 44, 67, 68
 
