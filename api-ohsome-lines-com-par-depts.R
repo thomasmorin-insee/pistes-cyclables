@@ -16,6 +16,36 @@ BUCKET <- "zg6dup"
 # liste des tags utiles 
 liste_tags <- eval(eval(parse(text = paste(readLines("./pistes-cyclables/_tags-osm.R"), collapse = "\n"))))
 
+# Convertir poly_commune en FeatureCollection GeoJSON
+poly_com_i$id <- 1  # ou un identifiant unique si vous avez plusieurs features
+fc_geojson <- geojsonsf::sf_geojson(select(poly_com_i, id), simplify = FALSE)
+
+# Requête dans l'api ohsome à partir d'un polygone de commune
+requete_ohsome <- function(objet_sf) {
+  
+  # Convertir poly_commune en FeatureCollection GeoJSON
+  objet_sf$id <- 1  # ou un identifiant unique si vous avez plusieurs features
+  fc_geojson <- geojsonsf::sf_geojson(select(objet_sf, id), simplify = FALSE)
+  
+  # Requête
+  r <- httr::POST(
+    url = "https://api.ohsome.org/v1/elements/geometry",
+    body = list(
+      bpolys = fc_geojson,
+      filter = "highway=*",
+      time = date,
+      properties = "tags",
+      showMetadata = FALSE
+    ),
+    encode = "multipart"
+  )
+  
+  # Dans un objet sf
+  response_text <- httr::content(r, "text")
+  sf_object <- st_read(response_text, quiet = TRUE)
+  return(sf_object)
+}
+
 # Polygone des communes dans open street map
 poly_com <- aws.s3::s3read_using(
   FUN = arrow::read_parquet,
@@ -51,26 +81,22 @@ for (i in seq_along(liste_codgeo)) {
   libgeo <- poly_com_i$libgeo
   message("Traitement ", i, "/", length(liste_codgeo), " : ",  codgeo, " ", libgeo)
 
-  # Convertir poly_commune en FeatureCollection GeoJSON
-  poly_com_i$id <- 1  # ou un identifiant unique si vous avez plusieurs features
-  fc_geojson <- geojsonsf::sf_geojson(select(poly_com_i, id), simplify = FALSE)
-  
-  # Requête
-  r <- httr::POST(
-    url = "https://api.ohsome.org/v1/elements/geometry",
-    body = list(
-      bpolys = fc_geojson,
-      filter = "highway=*",
-      time = date,
-      properties = "tags",
-      showMetadata = FALSE
-    ),
-    encode = "multipart"
-  )
-  
-  # Dans un objet sf
-  response_text <- httr::content(r, "text")
-  sf_object <- st_read(response_text, quiet = TRUE)
+  # Requête : corrige le polygone si besoin
+  sf_object <- tryCatch(
+    expr = { requete_ohsome(poly_com_i)}, 
+    error = function(e) {
+      message("... Nétoyage avec st_make_valid()...")
+      poly_com_i <- st_make_valid(poly_com_i)
+      res <- tryCatch(    
+        expr = { requete_ohsome(poly_com_i)}, 
+        error = function(e) {
+          # Nétoyage avec st_buffer
+          message("... Nétoyage avec st_buffer()...")
+          poly_com_i <- st_buffer(poly_com_i, 0)
+          return(requete_ohsome(poly_com_i))
+        })
+      return(res)
+    })
   
   # Lambert 93
   sf_object <- sf_object %>% st_transform(crs=2154)
