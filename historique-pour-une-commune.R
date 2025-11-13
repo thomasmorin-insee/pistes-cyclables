@@ -169,7 +169,6 @@ tbl %>% filter(commune == "Aix-en-Provence", filtre_ac == "yes") %>%
 # Résultats :
 
 ## 01/01/2025
-# # A tibble: 8 × 2
 # ame_d                                         longueur
 # <chr>                                            <dbl>
 # 1 AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE  15862. 
@@ -181,20 +180,29 @@ tbl %>% filter(commune == "Aix-en-Provence", filtre_ac == "yes") %>%
 # 7 RAMPE                                             13.0
 # 8 VOIE VERTE                                      9163. 
 
-# A tibble: 8 × 2
-ame_d                                         longueur
-<chr>                                            <dbl>
-  1 AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE  17869. 
-2 AUCUN                                           9716. 
-3 AUTRE                                          32627. 
-4 BANDE CYCLABLE                                 32594. 
-5 COULOIR BUS+VELO                                6376. 
-6 PISTE CYCLABLE                                 23389. 
-7 RAMPE                                             13.0
-8 VOIE VERTE                                      3843. 
+# 01/01/2023
+# ame_d                                         longueur
+# <chr>                                            <dbl>
+#   1 AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE  17869. 
+# 2 AUCUN                                           9716. 
+# 3 AUTRE                                          32627. 
+# 4 BANDE CYCLABLE                                 32594. 
+# 5 COULOIR BUS+VELO                                6376. 
+# 6 PISTE CYCLABLE                                 23389. 
+# 7 RAMPE                                             13.0
+# 8 VOIE VERTE                                      3843. 
+
+## 01/012017
+# A tibble: 5 × 2
+# ame_d                                         longueur
+# <chr>                                            <dbl>
+# 1 AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE    7734.
+# 2 AUTRE                                         1552196.
+# 3 BANDE CYCLABLE                                  15267.
+# 4 PISTE CYCLABLE                                   7004.
+# 5 VOIE VERTE                                        851.
 
 ## 13/11/2025 osmdata / geodatamine
-# A tibble: 8 x 4
 # ame_d                                         longueur longueur_cible  diff
 # <chr>                                            <dbl>          <dbl> <dbl>
 #   1 AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE  14841.         16079.   1238
@@ -230,20 +238,20 @@ ame_d                                         longueur
 # 7 DOUBLE SENS CYCLABLE PISTE               97.9           97.9     0
 # 8 PISTE CYCLABLE                         3016.          3472.    455
 
-## 01/012017
-# A tibble: 5 × 2
-# ame_d                                         longueur
-# <chr>                                            <dbl>
-# 1 AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE    7734.
-# 2 AUTRE                                         1552196.
-# 3 BANDE CYCLABLE                                  15267.
-# 4 PISTE CYCLABLE                                   7004.
-# 5 VOIE VERTE                                        851.
-
-# A tibble: 3 × 2
+# 01/01/2017
 # ame_g          longueur
 # <chr>             <dbl>
 # 1 AUTRE          1574507.
 # 2 BANDE CYCLABLE    7914.
 # 3 PISTE CYCLABLE     633.
 
+# 01/01/2023
+# ame_g                                longueur
+# <chr>                                   <dbl>
+#   1 AUCUN                                  83219.
+# 2 AUTRE                                   9110.
+# 3 BANDE CYCLABLE                         18629.
+# 4 COULOIR BUS+VELO                        2822.
+# 5 DOUBLE SENS CYCLABLE BANDE               162.
+# 6 DOUBLE SENS CYCLABLE NON MATERIALISE    9906.
+# 7 PISTE CYCLABLE                          2578.
