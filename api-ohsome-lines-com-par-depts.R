@@ -8,7 +8,8 @@ library(httr)
 date <- "2025-01-01"
 
 # Code du département
-code_dep <- "13"
+code_dep <- "01"
+FILE <- paste0("api-ohsome-com-par-depts-2025/lines-com-dep",code_dep ,".parquet")
 
 # Coffre
 BUCKET <- "zg6dup"
@@ -123,3 +124,22 @@ for (i in seq_along(liste_codgeo)) {
   liste_resultats[[codgeo]] <- longueur_voirie
   compteur_traitement <- i
 }
+
+# Correction des formats
+for(codgeo in liste_codgeo) {
+  data <- liste_resultats[[codgeo]]
+  data <- data %>% mutate(across(any_of(liste_tags), as.character))
+  liste_resultats[[codgeo]] <- data
+}
+
+# Résultat final
+data_resultats <- bind_rows(liste_resultats)
+
+# Enregistrement
+aws.s3::s3write_using(
+  data_resultats,
+  FUN = arrow::write_parquet,
+  object = FILE,
+  bucket = BUCKET,
+  opts = list("region" = "")
+)
