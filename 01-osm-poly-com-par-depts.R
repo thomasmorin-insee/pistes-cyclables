@@ -1,6 +1,6 @@
 ################################################################################
 #
-# Polygones des communes dans open street map oar département
+# Polygones des communes par département d'après open street map
 # 
 # Sortie : osm-polygones-com-geo2025/poly-com-dep",code_dep ,"-crs4356-geo2025.parquet"
 #

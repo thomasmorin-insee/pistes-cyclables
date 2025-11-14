@@ -269,20 +269,6 @@ SELECT
 		-- WHEN start_date IS NOT NULL THEN substring(start_date, 1, 4)
 		-- ELSE ''
 	-- END AS d_service
-	-- CASE
-		-- WHEN 
-			-- (cycleway IS NOT NULL AND cycleway != 'no')
-			-- OR highway = 'cycleway'
-			-- OR (cycleway_right IS NOT NULL AND cycleway_right != 'no')
-			-- OR (cycleway_left IS NOT NULL AND cycleway_left != 'no')
-			-- OR (cycleway_both IS NOT NULL AND cycleway_both != 'no')
-			-- OR (highway IN ('path', 'footway') AND bicycle IN ('yes', 'designated'))
-			-- OR (highway = 'service' AND bicycle IN ('yes', 'designated') AND access = 'no' AND (psv IN ('yes', 'designated') OR bus IN ('yes', 'designated')))
-			-- OR (highway IN ('pedestrian', 'unclassified', 'residential', 'service', 'primary', 'secondary', 'tertiary') AND cyclestreet = 'yes')
-			-- OR (highway = 'steps' AND ramp_bicycle = 'yes')
-		-- THEN 'yes'
-		-- ELSE 'false'
-	-- END filtre_ac,
 	CASE
 		WHEN 
 			(cycleway IS NOT NULL AND cycleway != 'no')
