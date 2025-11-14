@@ -81,22 +81,38 @@ for (i in seq_along(liste_codgeo)) {
   poly_com_i <- sf_poly_coms %>% filter(codgeo == !!codgeo)
   libgeo <- poly_com_i$libgeo
   message("Traitement ", i, "/", length(liste_codgeo), " : ",  codgeo, " ", libgeo)
-
+  
+  # plot(poly_com_i$libgeo)
+  
   # Requête : corrige le polygone si besoin
-  sf_object <- tryCatch(
-    expr = { requete_ohsome(poly_com_i)}, 
+  sf_object3 <- tryCatch(
+    expr = { 
+      requete_ohsome(poly_com_i) 
+    }, 
     error = function(e) {
       message("... Nétoyage avec st_make_valid()...")
       poly_com_i <- st_make_valid(poly_com_i)
-      res <- tryCatch(    
-        expr = { requete_ohsome(poly_com_i)}, 
+      tryCatch(    
+        expr = { 
+          requete_ohsome(poly_com_i)
+        }, 
         error = function(e) {
-          # Nétoyage avec st_buffer
-          message("... Nétoyage avec st_buffer()...")
-          poly_com_i <- st_buffer(poly_com_i, 0)
-          return(requete_ohsome(poly_com_i))
+          tryCatch(
+            expr = {
+              message("... Nétoyage avec st_buffer()...")
+              poly_com_i <- st_buffer(poly_com_i, 0)
+              requete_ohsome(poly_com_i)
+            },
+            error = function(e){
+              message("... Créer une enveloppe convexe...")
+              convex_hull <- st_convex_hull(st_combine(poly_points))
+              convex_hull_sf <- st_sf(geometry = convex_hull)
+              convex_hull_sf$osm_id <- poly_com_i$osm_id
+              convex_hull_sf$codgeo <- poly_com_i$codgeo
+              convex_hull_sf$libgeo <- poly_com_i$libgeo
+              requete_ohsome(convex_hull_sf)
+            })
         })
-      return(res)
     })
   
   # Lambert 93
