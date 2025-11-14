@@ -1,3 +1,12 @@
+################################################################################
+#   
+# Longueur des voies des communes par dépt : schéma des aménagements cyclables
+# 
+# Entrée : api-ohsome-com-par-depts-2025/lines-com-dep",code_dep ,".parquet
+# Sortie : schema-ac-com-par-depts-2025/dept-{code_dep}.parquet
+#
+################################################################################
+
 library(tidyverse)
 library(arrow)
 library(duckdb)
@@ -21,7 +30,7 @@ file_sql <- "./pistes-cyclables/_schema-amenagements-cyclables.sql"
 requete_sql <- readChar(file_sql, file.info(file_sql)$size)
 
 liste_dep <- c(
-  "01",
+  # "01",
   "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", 
   "13",
   "14", "15", "16", "17", "18", "19", 

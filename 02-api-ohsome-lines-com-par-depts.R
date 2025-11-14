@@ -52,7 +52,7 @@ requete_ohsome <- function(objet_sf) {
 
 # Liste des départements
 liste_dep <- c(
-  # "01", 
+  "01",
   "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", 
   # "13", 
   "14", "15", "16", "17", "18", "19", 
@@ -109,7 +109,7 @@ for(code_dep in liste_dep) {
     # plot(poly_com_i$libgeo)
     
     # Requête : corrige le polygone si besoin
-    sf_object3 <- tryCatch(
+    sf_object <- tryCatch(
       expr = { 
         requete_ohsome(poly_com_i) 
       }, 
@@ -183,5 +183,5 @@ for(code_dep in liste_dep) {
     bucket = BUCKET,
     opts = list("region" = "")
   )
-
+  
 }
