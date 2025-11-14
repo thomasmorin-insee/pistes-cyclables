@@ -17,7 +17,8 @@ library(httr)
 BUCKET <- "zg6dup"
 
 # Date de l'extraction
-date <- "2025-01-01"
+annee <- "2025"
+date <- paste0(annee, "-01-01")
 
 # liste des tags utiles 
 liste_tags <- eval(eval(parse(text = paste(readLines("./pistes-cyclables/_tags-osm.R"), collapse = "\n"))))
@@ -68,7 +69,7 @@ liste_dep <- c(
 for(code_dep in liste_dep) {
   
   # Fichier cible
-  FILE_DEP <- paste0("api-ohsome-com-par-depts-2025/lines-com-dep",code_dep ,".parquet")
+  FILE_DEP <- paste0("api-ohsome-com-par-depts-", annee, "/lines-com-dep", code_dep ,".parquet")
   
   message("Chargement des polygone des communes, département : ", code_dep)
   poly_com <- aws.s3::s3read_using(

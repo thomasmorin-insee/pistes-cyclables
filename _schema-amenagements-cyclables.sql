@@ -1,3 +1,7 @@
+--Source : https://framagit.org/PanierAvide/GeoDataMine/-/blob/master/themes/cycleway.sql?ref_type=heads
+--METADATA={ "name:fr": "Aménagements cyclables (schéma Transport.data.gouv.fr Aménagements cyclables 0.3.4)", "name:en": "Cycleway", "theme:fr": "Transports", "keywords:fr": [ "piste cyclable", "bande cyclable", "aménagement cyclable" ], "description:fr": "Aménagement cyclables issues d'OpenStreetMap (cycleway=* ou cycleway:right=* ou cycleway:left=* ou cycleway:both=* ou highway=cycleway)" }
+--GEOMETRY=line
+
 SELECT
 	CASE
 		WHEN cyclestreet = 'yes' THEN 'VELO RUE'
