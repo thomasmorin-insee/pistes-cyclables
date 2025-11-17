@@ -3,7 +3,7 @@
 # Longueur des voies des communes par département d'après l'API ohsome
 # 
 # Entrée : osm-polygones-com-geo2025/poly-com-dep",code_dep ,"-crs4356-geo2025.parquet
-# Sortie : api-ohsome-com-par-depts-2025/lines-com-dep",code_dep ,".parquet
+# Sortie : api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet
 #
 ################################################################################
 
@@ -12,16 +12,17 @@ library(sf)
 library(aws.s3)
 library(arrow)
 library(httr)
+library(glue)
 
 # Coffre
 BUCKET <- "zg6dup"
 
 # Date de l'extraction
 annee <- "2025"
-date <- paste0(annee, "-01-01")
+date <- glue("{annee}-01-01")
 
 # liste des tags utiles 
-liste_tags <- eval(eval(parse(text = paste(readLines("./pistes-cyclables/_tags-osm.R"), collapse = "\n"))))
+liste_tags <- eval(parse(text = paste(readLines("./pistes-cyclables/_tags-osm.R"), collapse = "\n")))
 
 # Requête dans l'api ohsome à partir d'un polygone de commune
 # Renvoie un objet sf
@@ -52,24 +53,22 @@ requete_ohsome <- function(objet_sf) {
 
 # Liste des départements
 liste_dep <- c(
-  "01",
-  "02", "03", "04", "05", "06", "07", "08", "09", "10", "11", "12", 
-  # "13", 
-  "14", "15", "16", "17", "18", "19", 
-  "2A", "2B", "21", "22", "23", "24", "25", "26", "27", "28", "29",
-  "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
-  "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
-  "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
-  "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
-  "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
-  "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
-  "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"
+  "01"
+  # ,"02" 
+  # ,"03", "04", "05", "06", "07", "08", "09", "10", "11", "12", 
+  # "13",
+  # "14", "15", "16", "17", "18", "19", 
+  # "2A", "2B", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+  # "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
+  # "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+  # "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
+  # "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
+  # "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+  # "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
+  # "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"
 )
 
 for(code_dep in liste_dep) {
-  
-  # Fichier cible
-  FILE_DEP <- paste0("api-ohsome-com-par-depts-", annee, "/lines-com-dep", code_dep ,".parquet")
   
   message("Chargement des polygone des communes, département : ", code_dep)
   poly_com <- aws.s3::s3read_using(
@@ -179,7 +178,7 @@ for(code_dep in liste_dep) {
   aws.s3::s3write_using(
     data_resultats,
     FUN = arrow::write_parquet,
-    object = FILE_DEP,
+    object =  glue("api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet"),
     bucket = BUCKET,
     opts = list("region" = "")
   )
