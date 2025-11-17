@@ -19,6 +19,8 @@ BUCKET <- "zg6dup"
 # Input/output
 input_file <- "api-ohsome-com-par-depts-2025/lines-com-dep{code_dep}.parquet"
 output_file <- "schema-ac-com-par-depts-2025/dept-{code_dep}.parquet"
+# input_file <- "schema-ac-com-par-depts-01-06-2024/lines-com-dep{code_dep}.parquet"
+# output_file <- "schema-ac-com-par-depts-01-06-2024/schema-ac-dept-{code_dep}-bis.parquet"
 
 # liste des tags utiles 
 file_tags <- "./pistes-cyclables/_tags-osm.R"
@@ -29,18 +31,21 @@ file_sql <- "./pistes-cyclables/_schema-amenagements-cyclables.sql"
 requete_sql <- readChar(file_sql, file.info(file_sql)$size)
 
 liste_dep <- c(
-  # "01",
-  # "02"
-  # , "03", 
-  # "04", "05"
-  # , "06", "07", "08" 
-  #, 
+  "01",
+  "02"
+  , "03",
+  "04", "05"
+  , "06", "07", "08"
+  ,
   "09"
-  # , "10", "11", "12", 
-  # "13",
-  # "14", "15", "16", "17", "18", "19", 
+  , "10", "11", "12",
+  "13",
+  "14", "15"
+  #, "16", "17", "18", "19", 
   # "2A", "2B", "21", "22", "23", "24", "25", "26", "27", "28", "29",
-  # "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
+  # "30", 
+  # "31"
+  # , "32", "33", "34", "35", "36", "37", "38", "39",
   # "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
   # "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
   # "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
@@ -63,13 +68,18 @@ for(code_dep in liste_dep) {
   # setdiff(liste_tags, colnames(longueurs_com))
   # intersect(liste_tags, colnames(longueurs_com))
   
-  # Ajoute les variables manquantes pour le sql
   for(tag in liste_tags) {
+    # Ajoute les variables manquantes pour le sql
     if(!tag %in% colnames(longueurs_com)) {
-      longueurs_com <- longueurs_com %>% mutate({{tag}} := "")
+      longueurs_com <- longueurs_com %>% mutate({{tag}} := as.character(NA))
+    }
+    # Vérifie qu'il n'y a pas de chaîne vide
+    nb_chaine_vide <- longueurs_com %>% filter(.data[[tag]] == "") %>% nrow()
+    if(nb_chaine_vide > 0) {
+      warning(glue("{code_dep} : tag {tag} : {nb_chaine_vide} chaînes vide"), immediate. = TRUE)
     }
   }
-  
+
   # Remplace les "." par des "_" (harmonisation avec le sql)
   longueurs_com <- longueurs_com %>% rename_with(~str_replace_all(.x, "\\.", "_"))
   
@@ -92,7 +102,7 @@ for(code_dep in liste_dep) {
     			    OR tracktype = 'grade1' 
     			    OR surface IN  ('asphalt', 'paving_stones', 'chipseal', 'concrete')
     			))
-    		THEN 'yes'
+    		THEN 'true'
     		ELSE 'false'
     END filtre_pc,
     -- Sens de circulation pour les routes potentiellement cyclables
