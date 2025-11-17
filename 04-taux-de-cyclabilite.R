@@ -5,7 +5,7 @@ library(glue)
 BUCKET <- "zg6dup"
 
 annee <- "2025"
-code_dep <- "01"
+code_dep <- "13"
 
 data <- aws.s3::s3read_using(
   FUN = arrow::read_parquet,
@@ -13,7 +13,10 @@ data <- aws.s3::s3read_using(
   bucket = BUCKET,
   opts = list("region" = "")
 )
+
 data %>% distinct(filtre_ac)
+
+
 data %>% distinct(filtre_pc)
 
 # Longueur des pistes dans l'Atlas Vélo et territoire

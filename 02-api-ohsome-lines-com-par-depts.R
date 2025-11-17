@@ -175,11 +175,12 @@ for(code_dep in liste_dep) {
   # Résultat final
   data_resultats <- bind_rows(liste_resultats)
   
+  FILE_DEP <- glue("api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet")
   message("Enregistrement du fichier ", FILE_DEP)
   aws.s3::s3write_using(
     data_resultats,
     FUN = arrow::write_parquet,
-    object =  glue("api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet"),
+    object = FILE_DEP,
     bucket = BUCKET,
     opts = list("region" = "")
   )

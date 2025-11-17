@@ -16,11 +16,9 @@ library(glue)
 # Coffre
 BUCKET <- "zg6dup"
 
-# Date de l'extraction
-annee <- "2025"
-
-# Dossier cible
-dir_output_ac <- 
+# Input/output
+input_file <- "api-ohsome-com-par-depts-2025/lines-com-dep{code_dep}.parquet"
+output_file <- "schema-ac-com-par-depts-2025/dept-{code_dep}.parquet"
 
 # liste des tags utiles 
 file_tags <- "./pistes-cyclables/_tags-osm.R"
@@ -50,10 +48,10 @@ liste_dep <- c(
 # Boucle sur les départements
 for(code_dep in liste_dep) {
 
-  message("Chargement des voiries en ", annee, ", département : ", code_dep)
+  message("Chargement du fichier ", glue(input_file))
   longueurs_com <- aws.s3::s3read_using(
     FUN = arrow::read_parquet,
-    object = glue("api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet"),
+    object = glue(input_file),
     bucket = BUCKET,
     opts = list("region" = "")
   )
@@ -106,11 +104,11 @@ for(code_dep in liste_dep) {
   dt <- dt %>% group_by(pick(-"longueur")) %>% 
     summarise(longueur = sum(longueur, na.rm = TRUE), .groups = "drop")
   
-  message("Enregistrement du fichier ", dir_output_ac, "/dept-", code_dep, ".parquet")
+  message("Enregistrement du fichier ", glue(output_file))
   aws.s3::s3write_using(
     dt,
     FUN = arrow::write_parquet,
-    object = glue("schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet"),
+    object = glue(output_file),
     bucket = BUCKET,
     opts = list("region" = "")
   )
