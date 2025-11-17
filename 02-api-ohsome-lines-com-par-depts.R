@@ -128,6 +128,7 @@ for(code_dep in liste_dep) {
               },
               error = function(e){
                 message("... Créer une enveloppe convexe...")
+                poly_points <- st_cast(poly_com_i, "POINT")
                 convex_hull <- st_convex_hull(st_combine(poly_points))
                 convex_hull_sf <- st_sf(geometry = convex_hull)
                 convex_hull_sf$osm_id <- poly_com_i$osm_id
