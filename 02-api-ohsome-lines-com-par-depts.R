@@ -2,7 +2,7 @@
 #   
 # Longueur des voies des communes par département d'après l'API ohsome
 # 
-# Entrée : osm-polygones-com-geo2025/poly-com-dep",code_dep ,"-crs4356-geo2025.parquet
+# Entrée : osm-polygones-com-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet
 # Sortie : api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet
 #
 ################################################################################
@@ -73,7 +73,7 @@ for(code_dep in liste_dep) {
   message("Chargement des polygone des communes, département : ", code_dep)
   poly_com <- aws.s3::s3read_using(
     FUN = arrow::read_parquet,
-    object = paste0("osm-polygones-com-geo2025/poly-com-dep",code_dep ,"-crs4356-geo2025.parquet"),
+    object = glue("osm-polygones-com-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet"),
     bucket = BUCKET,
     opts = list("region" = "")
   )
