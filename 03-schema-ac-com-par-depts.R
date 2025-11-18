@@ -2,8 +2,8 @@
 #   
 # Longueur des voies des communes par dépt : schéma des aménagements cyclables
 # 
-# Entrée : api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet
-# Sortie : schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet
+# Entrée : at36vc/api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet
+# Sortie : at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet
 #
 ################################################################################
 
@@ -32,21 +32,10 @@ file_sql <- "./pistes-cyclables/_schema-amenagements-cyclables.sql"
 requete_sql <- readChar(file_sql, file.info(file_sql)$size)
 
 liste_dep <- c(
-  "01",
-  "02"
-  , "03",
-  "04", "05"
-  , "06", "07", "08"
-  ,
-  "09"
-  , "10", "11", "12",
-  "13",
-  "14", "15"
-  , "16", "17", "18", "19",
+  "01", "02", "03", "04", "05", "06", "07", "08", "09", 
+  "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
   "2A", "2B", "21", "22", "23", "24", "25", "26", "27", "28", "29",
-  "30",
-  "31"
-  , "32", "33", "34", "35", "36", "37", "38", "39",
+  "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
   "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
   "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
   "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",

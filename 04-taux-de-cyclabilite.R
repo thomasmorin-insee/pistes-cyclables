@@ -1,118 +1,111 @@
+################################################################################
+#   
+# Base communale : longueur des voies et taux de cyclabilité
+# 
+# Entrée : at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet
+# Sortie : at36vc/taux-cyclable-com-{annee}/dept-{code_dep}.parquet
+#
+################################################################################
 library(tidyverse)
 library(glue)
 
 # Coffre
 BUCKET <- "zg6dup"
 
-input_ac <- "schema-ac-com-par-depts-01-06-2024/schema-ac-dept-{code_dep}.parquet"
-input_ac <- "schema-ac-com-par-depts-2025/dept-{code_dep}.parquet"
-code_dep <- "01"
+# Input / output
+annee <- 2025
+input_tc <- "at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet"
+output_tc <- "at36vc/taux-cyclable-com-{annee}/dept-{code_dep}.parquet"
 
-# Chargement des données
-data <- aws.s3::s3read_using(
-  FUN = arrow::read_parquet,
-  object = glue(input_ac),
-  bucket = BUCKET,
-  opts = list("region" = "")
+liste_dep <- c(
+  "01", 
+  "02",
+  "03", "04", "05", "06", "07", "08", "09", 
+  "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
+  "2A", "2B", "21", "22", "23", "24", "25", "26", "27", "28", "29",
+  "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
+  "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
+  "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
+  "60", "61", "62", "63", "64", "65", "66", "67", "68", "69",
+  "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
+  "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
+  "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"
 )
 
-data %>% group_by(filtre_ac, filtre_pc) %>%
-  summarise(sum(longueur)/1000) %>% 
-  knitr::kable(format.args = list(big.mark = " "), digits = 0)
-# |filtre_ac |filtre_pc | sum(longueur)/1000|
-# |:---------|:---------|------------------:|
-# |false     |false     |             19 176|
-# |false     |yes       |             13 152|
-# |true      |false     |              1 318|
-# |true      |yes       |                522|
+for(code_dep in liste_dep) {
 
-
-# Simplification
-crit_atlas_velo_territoire <- c(
-  "PISTE CYCLABLE" = "Piste cyclable",
-  "DOUBLE SENS CYCLABLE PISTE" = "Piste cyclable",
-  "VOIE VERTE" = "Voie verte",
-  "BANDE CYCLABLE" = "Bande cyclable",
-  "DOUBLE SENS CYCLABLE BANDE" = "Double sens cyclable",
-  "CHAUSSEE A VOIE CENTRALE BANALISEE" = "CVCB",
-  "COULOIR BUS+VELO" = "Couloir bus+vélo",
-  "VELO RUE" = "Velorue",
-  "GOULOTTE" = "Autre",
-  "ACCOTEMENT REVETU HORS CVCB"= "Autre",
-  "AUTRE" = "Aucun",
-  "AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE" = "Aucun",
-  "AUCUN" = "Aucun",
-  "DOUBLE SENS CYCLABLE NON MATERIALISE"  = "Aucun"
-)
-# Voies de gauche et de droite empilées
-data_l <- bind_rows(
-  data %>% select(ame = ame_d, sens = sens_d, statut = statut_d, revet = revet_d,
-                  access_ame, filtre_ac, longueur) %>% 
-    mutate(voie = "d"),
-  data %>% select(ame = ame_g, sens = sens_g, statut = statut_g, revet = revet_g,
-                  access_ame, filtre_ac, longueur) %>% 
-    mutate(voie = "g")) %>% 
-  filter(filtre_ac == "true") %>%
-  mutate(ame_rev = factor(ame, 
-                          levels = names(crit_atlas_velo_territoire),
-                          labels = unname(crit_atlas_velo_territoire))) %>%
-  mutate(pond = ifelse(sens == "BIDIRECTIONNEL", 2, 1)) %>%
-  mutate(cyclable = !ame_rev %in% c("Aucun", NA))
-
-# Résultats
-res <- data_l %>% 
-  filter(cyclable) %>%
-  group_by(ame_rev) %>%
-  summarise(longueur = sum(pond * longueur)/1000) %>% 
-  arrange(ame_rev)
-
-res %>% knitr::kable(format.args = list(big.mark = " "), digits = 0)
-# |ame                  | longueur|
-# |:--------------------|--------:|
-# |Piste cyclable       |    1 139|
-# |Voie verte           |      689|
-# |Bande cyclable       |      330|
-# |Double sens cyclable |       22|
-# |CVCB                 |       45|
-# |Couloir bus+vélo     |       41|
-# |Velorue              |        7|
-
-res %>% summarise(sum(longueur)) %>% knitr::kable(format.args = list(big.mark = " "), digits = 0)
-# | sum(longueur)|
-# |-------------:|
-# |         2 273|
-
-# Pondération
-data_l %>% filter(cyclable) %>% group_by(pond) %>% 
-  summarise(sum(longueur))%>% knitr::kable(format.args = list(big.mark = " "), digits = 0)
-# | pond| sum(longueur)|
-# |----:|-------------:|
-# |    1|       538 459|
-# |    2|       867 169|
-
-# Statut
-data_l %>% filter(cyclable) %>% 
-  group_by(statut) %>% 
-  summarise(sum(longueur*pond)) %>% knitr::kable(format.args = list(big.mark = " "), digits = 0)
-# |statut     | sum(longueur * pond)|
-# |:----------|--------------------:|
-# |EN SERVICE |            2 272 583|
-# |EN TRAVAUX |                  214|
-
-# revêtement (aucune info)
-data_l %>% filter(cyclable) %>% 
-  group_by(revet) %>% 
-  summarise(sum(longueur*pond))%>% knitr::kable(format.args = list(big.mark = " "), digits = 0)
-
-data_l %>% filter(cyclable) %>% 
-  group_by(access_ame) %>% 
-  summarise(sum(longueur*pond)/1000)%>% knitr::kable(format.args = list(big.mark = " "), digits = 0)
-
-data_l %>% filter(cyclable, access_ame == "VTC") %>% 
-  group_by(ame_rev) %>%
-  summarise(sum(longueur*pond)/1000)%>% knitr::kable(format.args = list(big.mark = " "), digits = 2)
-# |ame_rev        | sum(longueur * pond)/1000|
-# |:--------------|-------------------------:|
-# |Piste cyclable |                      0.14|
-# |Voie verte     |                      0.06|
+  # Chargement des données
+  data <- aws.s3::s3read_using(
+    FUN = arrow::read_parquet,
+    object = glue(input_tc),
+    bucket = BUCKET,
+    opts = list("region" = "")
+  )
   
+  # Critères simplifiés
+  crit_s <- c(
+    "PISTE CYCLABLE" = "piste",
+    "DOUBLE SENS CYCLABLE PISTE" = "piste",
+    "VOIE VERTE" = "voie_verte",
+    "BANDE CYCLABLE" = "bande",
+    "DOUBLE SENS CYCLABLE BANDE" = "bande",
+    "CHAUSSEE A VOIE CENTRALE BANALISEE" = "autre",
+    "COULOIR BUS+VELO" = "autre",
+    "VELO RUE" = "autre",
+    "GOULOTTE" = "autre",
+    "ACCOTEMENT REVETU HORS CVCB"= "autre"
+    # ,"AUTRE" = "aucun",
+    # "AMENAGEMENT MIXTE PIETON VELO HORS VOIE VERTE" = "aucun",
+    # "AUCUN" = "aucun",
+    # "DOUBLE SENS CYCLABLE NON MATERIALISE"  = "aucun"
+  )
+  
+  # Voies de gauche et de droite empilées
+  data_long <- bind_rows(
+    data %>% select(codgeo, libgeo, vc = ame_d, sens = sens_d, filtre_ac, filtre_pc, longueur), 
+    data %>% select(codgeo, libgeo, vc = ame_g, sens = sens_g, filtre_ac, filtre_pc, longueur)
+  ) %>% 
+    mutate(vc = ifelse(filtre_ac == "true", vc, NA),
+           vc = factor(vc, names(crit_s),unname(crit_s)),
+           pond = ifelse(sens == "BIDIRECTIONNEL", 2, 1),
+           cyclable = vc %in% c("piste", "voie_verte", "bande", "autre"),
+           voie_pc = filtre_pc == "true") %>%
+    group_by(codgeo, libgeo, voie_pc, cyclable, vc, pond) %>%
+    summarise(longueur = sum(longueur, na.rm = TRUE), .groups = "drop") 
+  
+  # Une ligne par commune
+  data_large <- data_long %>% 
+    mutate(piste = ifelse(vc == "piste", longueur * pond, 0),
+           bande = ifelse(vc == "bande", longueur * pond, 0),
+           voie_verte = ifelse(vc == "voie_verte", longueur * pond, 0),
+           autre  = ifelse(vc == "autre", longueur * pond, 0),
+           voie_cyclable = cyclable * longueur * pond,
+           voie_pc = voie_pc * longueur) %>%
+    group_by(codgeo, libgeo) %>%
+    summarise(across(.cols = c(piste, bande, voie_verte, autre, voie_cyclable, voie_pc), 
+                     .fns = ~ sum(.x, na.rm = TRUE)),
+              .groups = "drop") %>%
+    mutate(tx_cyclable = 100 * voie_cyclable / voie_pc)
+  
+  message("Enregistrement du fichier ", glue(output_tc))
+  
+  aws.s3::s3write_using(
+    data_large,
+    FUN = arrow::write_parquet,
+    object = glue(output_tc),
+    bucket = BUCKET,
+    opts = list("region" = "")
+  )
+}
+
+# Total pour un département
+data_large %>%
+  summarise(across(.cols = c(piste, bande, voie_verte, autre, voie_cyclable, voie_pc), 
+                   .fns = ~ sum(.x, na.rm = TRUE)),
+            .groups = "drop") %>%
+  mutate(tx_cyclable = 100 * voie_cyclable / voie_pc) %>%
+  knitr::kable(format.args = list(big.mark = " "), 
+               digits = c(rep(0,6),2))
+# |     piste|   bande| voie_verte|  autre| voie_cyclable|    voie_pc| tx_cyclable|
+# |---------:|-------:|----------:|------:|-------------:|----------:|-----------:|
+# | 1 051 391| 353 901|    949 733| 95 209|     2 450 234| 27 969 226|        8.76|
