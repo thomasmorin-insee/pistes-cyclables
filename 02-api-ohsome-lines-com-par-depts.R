@@ -18,11 +18,13 @@ library(glue)
 BUCKET <- "zg6dup"
 
 # Date de l'extraction
-annee <- "2022"
+annee <- "2025"
 date <- glue("{annee}-01-01")
 
-input_file <- "osm-polygones-com-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet"
-output_file <- "at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parquet"
+# Input / output
+input_api <- "osm-polygones-com-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet"
+output_api <- "at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parquet"
+# output_api <- "api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet" # Ancien dossier pour 2025
 
 # liste des tags utiles 
 liste_tags <- eval(parse(text = paste(readLines("./pistes-cyclables/_tags-osm.R"), collapse = "\n")))
@@ -56,11 +58,9 @@ requete_ohsome <- function(objet_sf) {
 
 # Liste des départements
 liste_dep <- c(
-  "01"
-  ,"02"
-  ,"03", "04", "05", "06", "07", "08", "09", "10", "11", "12",
-  "13",
-  "14", "15", "16", "17", "18", "19",
+  # "02"
+  "01", "02", "03", "04", "05", "06", "07", "08", "09",
+  "10", "11", "12", "13", "14", "15", "16", "17", "18", "19",
   "2A", "2B", "21", "22", "23", "24", "25", "26", "27", "28", "29",
   "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
   "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
@@ -73,10 +73,10 @@ liste_dep <- c(
 
 for(code_dep in liste_dep) {
   
-  message("Chargement des polygone des communes, département : ", code_dep)
+  message("Polygone des communes, fichier ", glue(input_api))
   poly_com <- aws.s3::s3read_using(
     FUN = arrow::read_parquet,
-    object = glue(input_file),
+    object = glue(input_api),
     bucket = BUCKET,
     opts = list("region" = "")
   )
@@ -178,11 +178,11 @@ for(code_dep in liste_dep) {
   # Résultat final
   data_resultats <- bind_rows(liste_resultats)
   
-  message("Enregistrement du fichier ", glue(output_file))
+  message("Enregistrement du fichier ", glue(output_api))
   aws.s3::s3write_using(
     data_resultats,
     FUN = arrow::write_parquet,
-    object = glue(output_file),
+    object = glue(output_api),
     bucket = BUCKET,
     opts = list("region" = "")
   )
@@ -192,7 +192,7 @@ for(code_dep in liste_dep) {
 # Déplacer les output
 # if(FALSE) {
 #   old <- "api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet"
-#   new <- output_file
+#   new <- output_api
 #   for(code_dep in liste_dep) {
 #     data <- aws.s3::s3read_using(
 #       FUN = arrow::read_parquet,
