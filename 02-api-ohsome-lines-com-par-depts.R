@@ -192,7 +192,7 @@ for(code_dep in liste_dep) {
 # Déplacer les output
 # if(FALSE) {
 #   old <- "api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet"
-#   new <- output_api
+#   new <-  "at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parquet"
 #   for(code_dep in liste_dep) {
 #     data <- aws.s3::s3read_using(
 #       FUN = arrow::read_parquet,

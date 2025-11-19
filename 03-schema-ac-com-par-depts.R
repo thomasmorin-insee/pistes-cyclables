@@ -86,12 +86,17 @@ for(code_dep in liste_dep) {
     -- Filtre pour les routes potentiellement cyclables
     CASE
     		WHEN 
-    			(highway IN ('trunk', 'living_street', 'primary', 'secondary', 'tertiary', 'residential', 'busway'))
-    			OR (highway IN ('unclassified', 'service') AND (
-    			    smoothness IN ('excellent', 'good') 
-    			    OR tracktype = 'grade1' 
-    			    OR surface IN  ('asphalt', 'paving_stones', 'chipseal', 'concrete')
-    			))
+    			(highway IN ('primary', 'secondary', 'busway'))
+    			OR (highway IN ('living_street', 'trunk',  'residential', 'tertiary', 'unclassified', 'service')
+    			    AND (access IS NULL OR access != 'no')
+    			    AND (motor_vehicle IS NULL OR motor_vehicle != 'no')
+    			    AND (motorcar IS NULL OR motorcar != 'no')
+    			    AND (surface IS NULL OR surface = 'asphalt')
+    			    AND (smoothness IS NULL OR smoothness IN ('excellent', 'good'))
+    			    AND (tracktype IS NULL OR tracktype = 'grade1') 
+    			    AND (bicycle IS NULL OR bicycle != 'designated')
+    			    AND (designation IS NULL OR designation != 'greenway')
+    			)
     		THEN 'true'
     		ELSE 'false'
     END filtre_pc,
@@ -100,7 +105,7 @@ for(code_dep in liste_dep) {
     	WHEN oneway IN ('yes', 'reversible', '-1', 'true', '1', 'reverse') THEN 'UNIDIRECTIONNEL'
     	ELSE 'BIDIRECTIONNEL'
     END sens_pc, 
-    codgeo, libgeo, longueur,
+    highway, codgeo, libgeo, longueur,
     FROM data_for_sql
   "))
   
