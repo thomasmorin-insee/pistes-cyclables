@@ -83,11 +83,12 @@ for(code_dep in liste_dep) {
   dt <- DBI::dbGetQuery(con, paste0("
     -- Requête sql du schéma des aménagements cyclables",
     requete_sql, "
-    -- Filtre pour les routes potentiellement cyclables
+    -- Filtre pour les routes potentiellement cyclables (on retire trunk et service)
     CASE
     		WHEN 
     			(highway IN ('primary', 'secondary', 'busway'))
-    			OR (highway IN ('living_street', 'trunk',  'residential', 'tertiary', 'unclassified', 'service')
+    --		OR (highway IN ('tertiary', 'residential', 'living_street', 'unclassified', 'trunk', 'service')
+      		OR (highway IN ('tertiary', 'residential', 'living_street', 'unclassified')
     			    AND (access IS NULL OR access != 'no')
     			    AND (motor_vehicle IS NULL OR motor_vehicle != 'no')
     			    AND (motorcar IS NULL OR motorcar != 'no')
@@ -122,3 +123,4 @@ for(code_dep in liste_dep) {
     opts = list("region" = "")
   )
 }
+
