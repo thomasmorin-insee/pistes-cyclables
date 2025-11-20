@@ -5,7 +5,12 @@
 # Entrée : at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet
 # Sortie : at36vc/taux-cyclable-com/base-com-cyclable-{annee}.parquet
 #
+# renommer : autre -> autre_cyclable
+#            voie_pc -> route_pc
+#
 ################################################################################
+
+# Librairie
 library(tidyverse)
 library(glue)
 
@@ -13,7 +18,7 @@ library(glue)
 BUCKET <- "zg6dup"
 
 # Input / output
-annee <- 2022
+annee <- 2025
 input_tc <- "at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet"
 output_tc <- "at36vc/taux-cyclable-com/base-com-cyclable-{annee}.parquet"
 
@@ -165,8 +170,13 @@ base_dep %>%
 # |46  |Lot                 |    47|    21|         15|    678|            83|  23 215|         0.4|
 # |48  |Lozère              |    12|     4|         11|      0|            27|  12 139|         0.2|
 
-# IDF
+# Départements avec arrondissements non traités
 base_dep %>%
   filter(dep %in% c("13","69", "75")) %>%
   arrange(desc(voie_cyclable)) %>%
-  knitr::kable(format.args = list(big.mark = " "), digits = c(rep(0,8), 1))
+  knitr::kable(format.args = list(big.mark = " "), digits = c(rep(0,7), 1))
+# |dep | piste| bande| voie_verte|   autre| voie_cyclable| voie_pc| tx_cyclable|
+# |:---|-----:|-----:|----------:|-------:|-------------:|-------:|-----------:|
+# |69  |   648|   941|        438| 208 483|         2 235|  26 831|         8.3|
+# |13  |   540|   375|        385|  31 444|         1 331|  25 315|         5.3|
+# |75  |   438|    95|         37| 171 244|           742|   2 556|        29.0|
