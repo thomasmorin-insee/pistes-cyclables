@@ -5,9 +5,6 @@
 # Entrée : at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet
 # Sortie : at36vc/taux-cyclable-com/base-com-cyclable-{annee}.parquet
 #
-# renommer : autre -> autre_cyclable
-#            voie_pc -> route_pc
-#
 ################################################################################
 
 # Librairie
@@ -18,9 +15,9 @@ library(glue)
 BUCKET <- "zg6dup"
 
 # Input / output
-annee <- 2025
+annee <- 2022
 input_tc <- "at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet"
-output_tc <- "at36vc/taux-cyclable-com/base-com-cyclable-{annee}.parquet"
+output_tc <- "at36vc/taux-cyclable-com/base-com-cyclable-{annee}-geo2025.parquet"
 
 liste_dep <- c(
   "01",  "02", "03", "04", "05", "06", "07", "08", "09", 
@@ -91,19 +88,22 @@ for(code_dep in liste_dep) {
     mutate(piste = ifelse(vc == "piste", longueur * pond, 0),
            bande = ifelse(vc == "bande", longueur * pond, 0),
            voie_verte = ifelse(vc == "voie_verte", longueur * pond, 0),
-           autre  = ifelse(vc == "autre", longueur * pond, 0),
+           autre_cyclable  = ifelse(vc == "autre", longueur * pond, 0),
            voie_cyclable = cyclable * longueur * pond,
-           voie_pc = voie_pc * longueur) %>%
+           route_pc = voie_pc * longueur) %>%
     group_by(codgeo, libgeo) %>%
-    summarise(across(.cols = c(piste, bande, voie_verte, autre, voie_cyclable, voie_pc), 
+    summarise(across(.cols = c(piste, bande, voie_verte, autre_cyclable, voie_cyclable, route_pc), 
                      .fns = ~ sum(.x, na.rm = TRUE)),
               .groups = "drop") %>%
-    mutate(tx_cyclable = 100 * voie_cyclable / voie_pc) %>%
+    mutate(tx_cyclable = 100 * voie_cyclable / route_pc) %>%
     mutate(dep = !!code_dep, .after = libgeo)
   
   data <- bind_rows(data_large, data)
   last_dep <- code_dep
 }
+
+# Formatage
+data <- data %>% arrange(codgeo) 
 
 message("Enregistrement du fichier ", glue(output_tc))
 
@@ -139,11 +139,11 @@ data %>%
 # Total par départements
 base_dep <- data %>% 
   group_by(dep) %>%
-  summarise(across(.cols = c(piste, bande, voie_verte, autre, voie_cyclable, voie_pc), 
+  summarise(across(.cols = c(piste, bande, voie_verte, autre, voie_cyclable, route_pc), 
                    .fns = ~ sum(.x, na.rm = TRUE)),
             .groups = "drop") %>%
-  mutate(tx_cyclable = 100 * voie_cyclable / voie_pc)  %>%
-  mutate(across(c(piste, bande, voie_verte, voie_cyclable, voie_pc), ~.x/1000))
+  mutate(tx_cyclable = 100 * voie_cyclable / route_pc)  %>%
+  mutate(across(c(piste, bande, voie_verte, voie_cyclable, route_pc), ~.x/1000))
 
 # Pour se comparer à https://www.velo-territoires.org/observatoires/donnees-velo/atlas-regionaux/
 code_occitanie <- c("09", "11", "12", "30", "31", "32","34", "46", "48", "65", "66", "81", "82")
