@@ -66,11 +66,13 @@ liste_dep <- c(
   # "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
   # "60", "61", "62", "63", "64", "65", "66",
   # "67", "68", "69",
-  # "70", "71", "72", "73", "74", 
-  "75"
+  # "70", "71", "72", "73", "74",
+  # "75"
   # , "76", "77", "78", "79",
   # "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
-  # "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"
+  # "90", "91", "92", "93", "94", "95",
+  "971"
+  , "972", "973", "974", "976"
 )
 
 for(code_dep in liste_dep) {
@@ -180,6 +182,8 @@ for(code_dep in liste_dep) {
   # Résultat final
   data_resultats <- bind_rows(liste_resultats)
   
+  lg <- sum(data_resultats$longueur, na.rm = TRUE)/1000
+  message(code_dep, " - ", annee, " : ", round(lg,-3), " km")
   message("Enregistrement du fichier ", glue(output_api))
   aws.s3::s3write_using(
     data_resultats,

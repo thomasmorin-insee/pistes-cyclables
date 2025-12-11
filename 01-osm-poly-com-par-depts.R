@@ -2,7 +2,7 @@
 #
 # Polygones des communes par département d'après open street map
 # 
-# Sortie : osm-polygones-com-geo2025/poly-com-dep",code_dep ,"-crs4356-geo2025.parquet"
+# Sortie : at36vc/osmdata-polygones-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet
 #
 ################################################################################
 
@@ -18,6 +18,8 @@ library(arrow)
 # Coffre
 BUCKET <- "zg6dup"
 
+output_polygone <- "at36vc/osmdata-polygones-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet"
+
 # Départements OSM
 liste_dep_osm <- c(
   "01" = "Ain", "02" = "Aisne", "03" = "Allier", "04" = "Alpes-de-Haute-Provence", "05" = "Hautes-Alpes", "06" = "Alpes-Maritimes", "07" = "Ardèche", "08" = "Ardennes",
@@ -31,13 +33,10 @@ liste_dep_osm <- c(
   "67" = "Bas-Rhin", "68" = "Haut-Rhin", "69" = "Rhône", "70" = "Haute-Saône", "71" = "Saône-et-Loire", "72" = "Sarthe", "73" = "Savoie", "74" = "Haute-Savoie",
   "75" = "Paris", "76" = "Seine-Maritime", "77" = "Seine-et-Marne", "78" = "Yvelines", "79" = "Deux-Sèvres", "80" = "Somme", "81" = "Tarn", "82" = "Tarn-et-Garonne",
   "83" = "Var", "84" = "Vaucluse", "85" = "Vendée", "86" = "Vienne", "87" = "Haute-Vienne", "88" = "Vosges", "89" = "Yonne", "90" = "Territoire de Belfort", "91" = "Essonne",
-  "92" = "Hauts-de-Seine", "93" = "Seine-Saint-Denis", "94" = "Val-de-Marne", "95" = "Val-d'Oise",
-  "971" = "Guadeloupe", "972" = "Martinique", "973" = "Guyane",
-  "974" = "La Réunion", "976" = "Mayotte"
+  "92" = "Hauts-de-Seine", "93" = "Seine-Saint-Denis", "94" = "Val-de-Marne", "95" = "Val-d'Oise"
 )
 
-liste_code_dep <- names(liste_dep_osm)[1:12]
-compteur_traitement <- 2
+compteur_traitement <- 0
 
 # Boucle pour osmdata_sf
 osmdata_sf_retry <- function(dept, max_retries = 3) {
@@ -68,7 +67,7 @@ for (i in seq_along(liste_code_dep)) {
   # Passe les communes déjà traitées
   if(i <= compteur_traitement) next;
   
-  code_dep <- liste_code_dep[i]
+  code_dep <- liste_dep_osm[i]
   message(i, " : ", code_dep, " ", liste_dep_osm[code_dep])
 
   # Code du département
@@ -93,7 +92,7 @@ for (i in seq_along(liste_code_dep)) {
   aws.s3::s3write_using(
     df_poly_commune,
     FUN = arrow::write_parquet,
-    object = paste0("osm-polygones-com-geo2025/poly-com-dep",code_dep ,"-crs4356-geo2025.parquet"),
+    object = glue(output_polygone),
     bucket = BUCKET,
     opts = list("region" = "")
   )
