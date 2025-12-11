@@ -15,7 +15,7 @@ library(glue)
 BUCKET <- "zg6dup"
 
 # Input / output
-annee <- 2022
+annee <- 2025
 input_tc <- "at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet"
 output_tc <- "at36vc/taux-cyclable-com/base-com-cyclable-{annee}-geo2025.parquet"
 
@@ -118,28 +118,25 @@ aws.s3::s3write_using(
 # Grandes villes
 data %>%
   select(-dep) %>%
-  filter(codgeo %in% c("75056", "13055", "69123", "31555", "34172", "33063", 
+  filter(codgeo %in% c("31555", "34172", "33063", 
                        "59350", "67482", "44109", "35238")) %>%
   arrange(desc(tx_cyclable)) %>%
   knitr::kable(format.args = list(big.mark = " "), digits = c(rep(0,8), 1))
-# |codgeo |libgeo      |   piste|   bande| voie_verte|   autre| voie_cyclable|   voie_pc| tx_cyclable|
-# |:------|:-----------|-------:|-------:|----------:|-------:|-------------:|---------:|-----------:|
-# |67482  |Strasbourg  | 256 279|  42 408|    125 897|  10 254|       434 838| 1 147 343|        37.9|
-# |31555  |Toulouse    | 274 447| 151 089|    297 906|  58 160|       781 603| 2 303 502|        33.9|
-# |44109  |Nantes      | 109 309| 170 217|    115 539|  38 222|       433 287| 1 313 304|        33.0|
-# |35238  |Rennes      | 112 211| 112 050|     44 951|  23 705|       292 917|   989 115|        29.6|
-# |75056  |Paris       | 438 359|  95 185|     37 286| 171 244|       742 074| 2 555 776|        29.0|
-# |69123  |Lyon        | 139 327| 111 591|     14 073|  80 464|       345 456| 1 224 945|        28.2|
-# |33063  |Bordeaux    |  85 037| 102 365|     11 027|  48 772|       247 200| 1 129 956|        21.9|
-# |59350  |Lille       |  62 269|  60 654|     36 373|  21 494|       180 789|   849 434|        21.3|
-# |34172  |Montpellier | 150 690|  39 530|     37 341|  15 641|       243 202| 1 352 985|        18.0|
-# |13055  |Marseille   |  99 964|  54 565|     83 207|   8 329|       246 065| 3 250 407|         7.6|
+# |codgeo |libgeo      |   piste|   bande| voie_verte| autre_cyclable| voie_cyclable|  route_pc| tx_cyclable|
+# |:------|:-----------|-------:|-------:|----------:|--------------:|-------------:|---------:|-----------:|
+# |67482  |Strasbourg  | 256 279|  42 408|    125 897|         10 254|       434 838| 1 147 343|        37.9|
+# |31555  |Toulouse    | 274 447| 151 089|    297 906|         58 160|       781 603| 2 303 502|        33.9|
+# |44109  |Nantes      | 109 309| 170 217|    115 539|         38 222|       433 287| 1 313 304|        33.0|
+# |35238  |Rennes      | 112 211| 112 050|     44 951|         23 705|       292 917|   989 115|        29.6|
+# |33063  |Bordeaux    |  85 037| 102 365|     11 027|         48 772|       247 200| 1 129 956|        21.9|
+# |59350  |Lille       |  62 269|  60 654|     36 373|         21 494|       180 789|   849 434|        21.3|
+# |34172  |Montpellier | 150 690|  39 530|     37 341|         15 641|       243 202| 1 352 985|        18.0|
 
 
 # Total par départements
 base_dep <- data %>% 
   group_by(dep) %>%
-  summarise(across(.cols = c(piste, bande, voie_verte, autre, voie_cyclable, route_pc), 
+  summarise(across(.cols = c(piste, bande, voie_verte, autre_cyclable, voie_cyclable, route_pc), 
                    .fns = ~ sum(.x, na.rm = TRUE)),
             .groups = "drop") %>%
   mutate(tx_cyclable = 100 * voie_cyclable / route_pc)  %>%
@@ -175,8 +172,14 @@ base_dep %>%
   filter(dep %in% c("13","69", "75")) %>%
   arrange(desc(voie_cyclable)) %>%
   knitr::kable(format.args = list(big.mark = " "), digits = c(rep(0,7), 1))
-# |dep | piste| bande| voie_verte|   autre| voie_cyclable| voie_pc| tx_cyclable|
-# |:---|-----:|-----:|----------:|-------:|-------------:|-------:|-----------:|
-# |69  |   648|   941|        438| 208 483|         2 235|  26 831|         8.3|
-# |13  |   540|   375|        385|  31 444|         1 331|  25 315|         5.3|
-# |75  |   438|    95|         37| 171 244|           742|   2 556|        29.0|
+# |dep | piste| bande| voie_verte| autre_cyclable| voie_cyclable| route_pc| tx_cyclable|
+# |:---|-----:|-----:|----------:|--------------:|-------------:|--------:|-----------:|
+# |69  |   648|   941|        438|        208 483|         2 235|   26 830|         8.3|
+# |13  |   545|   381|        386|         32 003|         1 344|   25 553|         5.3|
+# |75  |   438|    95|         37|        171 244|           742|    2 556|        29.0|
+
+# DOM
+base_dep %>%
+  filter(dep %in% c( "971", "972", "973", "974", "976")) %>%
+  arrange(desc(voie_cyclable)) %>%
+  knitr::kable(format.args = list(big.mark = " "), digits = c(rep(0,7), 1))
