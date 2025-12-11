@@ -2,7 +2,7 @@
 #   
 # Longueur des voies des communes par département d'après l'API ohsome
 # 
-# Entrée : osm-polygones-com-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet
+# Entrée : at36vc/osmdata-polygones-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet
 # Sortie : at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parquet
 #
 ################################################################################
@@ -22,7 +22,7 @@ annee <- "2025"
 date <- glue("{annee}-01-01")
 
 # Input / output
-input_api <- "osm-polygones-com-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet"
+input_api <- "at36vc/osmdata-polygones-geo2025/poly-com-dep{code_dep}-crs4356-geo2025.parquet"
 output_api <- "at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parquet"
 # output_api <- "api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet" # Ancien dossier pour 2025
 
@@ -64,11 +64,13 @@ liste_dep <- c(
   # "30", "31", "32", "33", "34", "35", "36", "37", "38", "39",
   # "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
   # "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
-  # "60", "61", "62", "63", "64", "65", "66", 
-  "67", "68", "69",
-  "70", "71", "72", "73", "74", "75", "76", "77", "78", "79",
-  "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
-  "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"
+  # "60", "61", "62", "63", "64", "65", "66",
+  # "67", "68", "69",
+  # "70", "71", "72", "73", "74", 
+  "75"
+  # , "76", "77", "78", "79",
+  # "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
+  # "90", "91", "92", "93", "94", "95", "971", "972", "973", "974", "976"
 )
 
 for(code_dep in liste_dep) {
