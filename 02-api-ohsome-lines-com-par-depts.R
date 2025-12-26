@@ -18,7 +18,7 @@ library(glue)
 BUCKET <- "zg6dup"
 
 # Date de l'extraction
-annee <- "2025"
+annee <- "2020"
 date <- glue("{annee}-01-01")
 
 # Input / output
@@ -27,7 +27,7 @@ output_api <- "at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parq
 # output_api <- "api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet" # Ancien dossier pour 2025
 
 # liste des tags utiles 
-liste_tags <- eval(parse(text = paste(readLines("./pistes-cyclables/_tags-osm.R"), collapse = "\n")))
+liste_tags <- eval(parse(text = paste(readLines("_tags-osm.R"), collapse = "\n")))
 
 # Requête dans l'api ohsome à partir d'un polygone de commune
 # Renvoie un objet sf
@@ -65,12 +65,13 @@ liste_dep <- c(
   # "40", "41", "42", "43", "44", "45", "46", "47", "48", "49",
   # "50", "51", "52", "53", "54", "55", "56", "57", "58", "59",
   # "60", "61", "62", "63", "64", "65", "66",
-  # "67", "68", "69",
-  # "70", "71", "72", "73", "74",
-  # "75"
-  # , "76", "77", "78", "79",
-  # "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
-  # "90", "91", "92", "93", "94", "95",
+  # "67", "68",
+  "69",
+  "70", "71", "72", "73", "74",
+  "75"
+  , "76", "77", "78", "79",
+  "80", "81", "82", "83", "84", "85", "86", "87", "88", "89",
+  "90", "91", "92", "93", "94", "95",
   "971"
   , "972", "973", "974", "976"
 )
