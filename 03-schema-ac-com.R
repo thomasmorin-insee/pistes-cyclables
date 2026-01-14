@@ -3,7 +3,7 @@
 # Longueur des voies des communes par dépt : schéma des aménagements cyclables
 # 
 # Entrée : at36vc/api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet
-# Sortie : at36vc/schema-ac-com-par-depts-{annee}/dept-{code_dep}.parquet
+# Sortie : at36vc/schema-ac-com/schema-ac-com-{annee}.parquet
 #
 ################################################################################
 
@@ -106,7 +106,8 @@ for(code_dep in liste_dep) {
     	WHEN oneway IN ('yes', 'reversible', '-1', 'true', '1', 'reverse') THEN 'UNIDIRECTIONNEL'
     	ELSE 'BIDIRECTIONNEL'
     END sens_pc, 
-    highway, bicycle, designation, codgeo, libgeo, longueur,
+    -- highway, bicycle, designation, codgeo, libgeo, longueur,
+    *
     FROM data_for_sql
   "))
   
@@ -118,6 +119,7 @@ for(code_dep in liste_dep) {
   dt <- bind_rows(dt, dt_dep)
   last_dep <- code_dep
 }
+
 
 message("Enregistrement du fichier ", glue(output_file))
 aws.s3::s3write_using(
