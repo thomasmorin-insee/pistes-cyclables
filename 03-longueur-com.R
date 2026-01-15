@@ -59,13 +59,6 @@ for(code_dep in liste_dep) {
   dt <- bind_rows(dt, dt_dep)
 }
 
-annee <- 2017
-dt <- aws.s3::s3read_using(
-  FUN = arrow::read_parquet,
-  object = glue(output_file),
-  bucket = BUCKET,
-  opts = list("region" = "")
-)
 
 # liste des tags utiles 
 file_tags <- "_tags-osm.R"
