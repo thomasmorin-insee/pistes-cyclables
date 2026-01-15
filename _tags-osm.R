@@ -11,7 +11,8 @@ c(
   # 1. Caractéristiques générales
   "highway", "construction", "junction", "tracktype", "service",
   "footway", "path", "steps", "living_street", "pedestrian",
-  "residential", "unclassified", "primary", "secondary", "tertiary",
+  "residential", "unclassified",
+  # "primary", "secondary", "tertiary",
   
   # 2. Aménagements cyclables
   "cycleway", "cycleway.left", "cycleway.right", "cycleway.both",
@@ -43,8 +44,17 @@ c(
   
   # 7. Métadonnées
   "ref", "description", "note", "fixme",
-  "source", "source.geometry", "start_date", "osm_timestamp",
+  "source", "source.geometry", "start_date",
+  
+  # Jamais trouvé :
+  # "osm_timestamp", 
   
   # 8. Relations d’itinéraires
-  "route", "route_icn_ref", "route_ncn_ref", "route_rcn_ref", "route_lcn_ref"
+  "route"
+  
+  # Jamais trouvé :
+  #, "route_icn_ref", "route_ncn_ref", "route_rcn_ref", "route_lcn_ref"
+  
+  # Ajouter ?
+  # ,"icn", "ncn", "rcn", "icn_ref", "ncn_ref", "rcn_ref"
   )

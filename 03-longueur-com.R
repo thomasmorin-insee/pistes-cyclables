@@ -7,34 +7,22 @@
 #
 ################################################################################
 
-
 library(tidyverse)
 library(arrow)
 library(duckdb)
 library(DBI)
 library(glue)
 
+# Connexion duckdb
+con <- DBI::dbConnect(duckdb::duckdb())
+
 # Coffre
 BUCKET <- "zg6dup"
 
 # Input/output
-annee <- 2025
+annee <- 2017
 input_file <- "at36vc/api-ohsome-com-par-depts-{annee}/lg-com-dep{code_dep}.parquet"
 output_file <- "at36vc/longueur-com/longueur-com-{annee}.parquet"
-output_file_light <- "at36vc/longueur-com/longueur-com-{annee}-light.parquet"
-
-
-# Connexion duckdb
-# DBI::dbDisconnect(con, shutdown = TRUE)
-con <- DBI::dbConnect(duckdb::duckdb())
-
-# liste des tags utiles 
-file_tags <- "_tags-osm.R"
-liste_tags <- eval(parse(text = paste(readLines(file_tags), collapse = "\n")))
-
-# Requête sql
-file_sql <- "_schema-amenagements-cyclables.sql"
-requete_sql <- readChar(file_sql, file.info(file_sql)$size)
 
 liste_dep <- c(
   "01", "02", "03", "04", "05", "06", "07", "08", "09",
@@ -54,7 +42,7 @@ liste_dep <- c(
 dt <- tibble(dep = character(), codgeo = character())
 for(code_dep in liste_dep) {
 
-  message("Chargement du fichier ", glue(input_file))
+  message("Chargement du fichier ", glue(input_file), " en ", annee)
   dt_dep <- aws.s3::s3read_using(
     FUN = arrow::read_parquet,
     object = glue(input_file),
@@ -71,6 +59,36 @@ for(code_dep in liste_dep) {
   dt <- bind_rows(dt, dt_dep)
 }
 
+annee <- 2019
+dt <- aws.s3::s3read_using(
+  FUN = arrow::read_parquet,
+  object = glue(output_file),
+  bucket = BUCKET,
+  opts = list("region" = "")
+)
+
+# liste des tags utiles 
+file_tags <- "_tags-osm.R"
+liste_tags <- eval(parse(text = paste(readLines(file_tags), collapse = "\n")))
+
+tag_non_present <- c()
+for(tag in liste_tags) {
+  # Vérifie si le tag existe
+  if(!tag %in% colnames(dt)) {
+    dt <- dt %>% mutate({{tag}} := as.character(NA))
+    tag_non_present <- c(tag_non_present, tag)
+  } else {
+    # Vérifie qu'il n'y a pas de chaîne vide
+    # nb_chaine_vide <- dt %>% filter(.data[[tag]] == "") %>% nrow()
+    # if(nb_chaine_vide > 0) {
+    #   warning(glue("tag {tag} : {nb_chaine_vide} chaînes vide"), immediate. = TRUE)
+    # }
+  }
+}
+warning("# ", annee, "-> ", paste0(tag_non_present, collapse = ", "))
+# 2025 -> cycleway.both.est_width, smoothness.left, smoothness.right 
+# 2022-> cycleway.both.est_width, cycleway.left.smoothness, smoothness.left, smoothness.right 
+# 2019-> steps, cycleway.both.width, cycleway.left.est_width, cycleway.right.est_width, cycleway.both.est_width, cycleway.left.smoothness, cycleway.right.smoothness, sidewalk.left.segregated, sidewalk.segregated, surface.left, surface.right, smoothness.left, smoothness.right, designation 
 
 message("Enregistrement du fichier ", glue(output_file))
 aws.s3::s3write_using(
@@ -80,35 +98,6 @@ aws.s3::s3write_using(
   bucket = BUCKET,
   opts = list("region" = "")
 )
-
-tag_non_present <- c()
-for(tag in liste_tags) {
-  # Vérifie si le tag existe
-  if(!tag %in% colnames(dt)) {
-    tag_non_present <- c(tag_non_present, tag)
-  } else {
-    # Vérifie qu'il n'y a pas de chaîne vide
-    nb_chaine_vide <- dt %>% filter(.data[[tag]] == "") %>% nrow()
-    if(nb_chaine_vide > 0) {
-      warning(glue("tag {tag} : {nb_chaine_vide} chaînes vide"), immediate. = TRUE)
-    }
-  }
-}
-warning("tags non présent en ", annee, " :\n - ", 
-        paste0(tag_non_present, collapse = " \n - "))
-
-# tags non présent en 2025 :
-#   - primary 
-# - secondary 
-# - tertiary 
-# - cycleway.both.est_width 
-# - smoothness.left 
-# - smoothness.right 
-# - osm_timestamp 
-# - route_icn_ref 
-# - route_ncn_ref 
-# - route_rcn_ref 
-# - route_lcn_ref 
 
 
 DBI::dbDisconnect(con)
