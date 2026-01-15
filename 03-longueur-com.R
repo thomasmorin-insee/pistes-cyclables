@@ -59,7 +59,7 @@ for(code_dep in liste_dep) {
   dt <- bind_rows(dt, dt_dep)
 }
 
-annee <- 2019
+annee <- 2017
 dt <- aws.s3::s3read_using(
   FUN = arrow::read_parquet,
   object = glue(output_file),
@@ -89,6 +89,7 @@ warning("# ", annee, "-> ", paste0(tag_non_present, collapse = ", "))
 # 2025 -> cycleway.both.est_width, smoothness.left, smoothness.right 
 # 2022-> cycleway.both.est_width, cycleway.left.smoothness, smoothness.left, smoothness.right 
 # 2019-> steps, cycleway.both.width, cycleway.left.est_width, cycleway.right.est_width, cycleway.both.est_width, cycleway.left.smoothness, cycleway.right.smoothness, sidewalk.left.segregated, sidewalk.segregated, surface.left, surface.right, smoothness.left, smoothness.right, designation 
+# 2017-> cycleway.both.width, cycleway.left.est_width, cycleway.right.est_width, cycleway.both.est_width, cycleway.surface, cycleway.left.smoothness, cycleway.right.smoothness, cycleway.smoothness, cycleway.right.segregated, cycleway.both.segregated, sidewalk.bicycle, sidewalk.left.segregated, sidewalk.segregated, surface.left, surface.right, smoothness.left, smoothness.right, cyclestreet 
 
 message("Enregistrement du fichier ", glue(output_file))
 aws.s3::s3write_using(
