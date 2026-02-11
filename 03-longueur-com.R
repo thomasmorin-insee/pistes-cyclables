@@ -1,6 +1,6 @@
 ################################################################################
 #   
-# Longueur des voies des communes par dépt : schéma des aménagements cyclables
+# Longueur des voies des communes : schéma des aménagements cyclables
 # 
 # Entrée : at36vc/api-ohsome-com-par-depts-{annee}/lines-com-dep{code_dep}.parquet
 # Sortie : at36vc/longueur-com/longueur-com-{annee}.parquet

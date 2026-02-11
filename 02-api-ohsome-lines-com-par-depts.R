@@ -18,7 +18,7 @@ library(glue)
 BUCKET <- "zg6dup"
 
 # Date de l'extraction
-annee <- "2020"
+annee <- "2026"
 date <- glue("{annee}-01-01")
 
 # Input / output
