@@ -19,4 +19,5 @@ Remarque : les polygones correspondent à l'état présent d'open street map.
 ## Schéma des aménagements cyclables, exemple d'utilisation
 
 - 04-schema-amenagements-cyclables
+- utilisation du schéma sql : [sql/ame_insee.sql](sql/ame_insee.sql) 
 
