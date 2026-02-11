@@ -16,6 +16,7 @@ Remarque : les polygones correspondent à l'état présent d'open street map.
 
 - 03-longueur-com.R
 
-## Appliquer un schéma des aménagements cyclables
+## Schéma des aménagements cyclables, exemple d'utilisation
 
+- 04-schema-amenagements-cyclables
 

@@ -1,6 +1,6 @@
 ################################################################################
 #   
-# Schéma des aménagements cyclables
+# Schéma des aménagements cyclables : exemple d'utilisation
 # 
 # Entrée :  at36vc/longueur-com/longueur-com-{annee}.parquet
 #
@@ -162,5 +162,3 @@ dt_wide_cyclable <- dt %>%
 # Exemple de strasbourg
 dt_wide_cyclable %>% filter(codgeo=="67482") 
 
-
-res <- left_join(dt_wide_cyclable)
