@@ -4,6 +4,7 @@ library(aws.s3)
 library(arrow)
 library(httr)
 library(glue)
+library(ohsome)
 
 # Coffre
 BUCKET <- "zg6dup"
